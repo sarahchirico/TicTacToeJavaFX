@@ -11,6 +11,7 @@ import java.util.Random;
  */
 public class CpuPlayer extends Player {
     private final Random random;
+    private String name = "CPU #1";
 
     /**
      * Creates a CPU player with a randomly seeded move generator.
@@ -40,6 +41,23 @@ public class CpuPlayer extends Player {
         this.random = Objects.requireNonNull(random, "random");
     }
     
+    /** Returns this CPU player's name. */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Sets this CPU player's name.
+     *
+     * @param name the nonblank player name
+     * @throws IllegalArgumentException if {@code name} is null or blank
+     */
+    public void setName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("A player name cannot be null or blank");
+        }
+        this.name = name;
+    }
 
     /** Places this player's marker in a randomly selected empty cell. */
     @Override

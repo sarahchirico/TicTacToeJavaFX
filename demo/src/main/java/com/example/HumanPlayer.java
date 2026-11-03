@@ -9,6 +9,7 @@ import java.util.Scanner;
  */
 public class HumanPlayer extends Player {
     private final Scanner scanner;
+    private String name = "Player #1";
 
     /**
      * Creates a human player that reads moves from the supplied scanner.
@@ -21,6 +22,24 @@ public class HumanPlayer extends Player {
     public HumanPlayer(char marker, Scanner scanner) {
         super(marker);
         this.scanner = Objects.requireNonNull(scanner, "scanner");
+    }
+
+    /** Returns this human player's name. */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Sets this human player's name.
+     *
+     * @param name the nonblank player name
+     * @throws IllegalArgumentException if {@code name} is null or blank
+     */
+    public void setName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("A player name cannot be null or blank");
+        }
+        this.name = name;
     }
 
     /** Prompts for coordinates until this player's marker is placed successfully. */
