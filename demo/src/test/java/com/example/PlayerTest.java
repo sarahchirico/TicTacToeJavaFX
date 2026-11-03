@@ -7,10 +7,55 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.Scanner;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /** Unit tests for human and CPU player move behavior. */
+@TestMethodOrder(OrderAnnotation.class)
 class PlayerTest {
+    /** Verifies the first two players of each type receive sequential default names. */
+    @Test
+    @Order(1)
+    void assignsSequentialDefaultNamesToHumanAndCpuPlayers() {
+        HumanPlayer firstHuman = new HumanPlayer('X', new Scanner(""));
+        HumanPlayer secondHuman = new HumanPlayer('O', new Scanner(""));
+        CpuPlayer firstCpu = new CpuPlayer('X', new Random(7));
+        CpuPlayer secondCpu = new CpuPlayer('O', new Random(8));
+
+        assertEquals("Player #1", firstHuman.getName());
+        assertEquals("Player #2", secondHuman.getName());
+        assertEquals("CPU #1", firstCpu.getName());
+        assertEquals("CPU #2", secondCpu.getName());
+    }
+
+    /** Verifies both player types can have their names changed. */
+    @Test
+    void playerNamesCanBeUpdated() {
+        HumanPlayer human = new HumanPlayer('X', new Scanner(""));
+        CpuPlayer cpu = new CpuPlayer('O', new Random(7));
+
+        human.setName("Alice");
+        cpu.setName("Computer");
+        assertEquals("Alice", human.getName());
+        assertEquals("Computer", cpu.getName());
+    }
+
+    /** Verifies null and whitespace-only player names are rejected. */
+    @Test
+    void playerNamesCannotBeNullOrBlank() {
+        HumanPlayer human = new HumanPlayer('X', new Scanner(""));
+        CpuPlayer cpu = new CpuPlayer('O', new Random(7));
+
+        assertThrows(IllegalArgumentException.class, () -> human.setName(null));
+        assertThrows(IllegalArgumentException.class, () -> human.setName(""));
+        assertThrows(IllegalArgumentException.class, () -> human.setName(" \t\n "));
+        assertThrows(IllegalArgumentException.class, () -> cpu.setName(null));
+        assertThrows(IllegalArgumentException.class, () -> cpu.setName(""));
+        assertThrows(IllegalArgumentException.class, () -> cpu.setName(" \t\n "));
+    }
+
     /** Verifies a human can place a marker at valid coordinates. */
     @Test
     void humanCanPlaceAMoveFromSelectedCoordinates() {
