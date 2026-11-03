@@ -1,16 +1,30 @@
 package com.example;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 import javafx.application.Application;
+import javafx.animation.Animation;
+import javafx.animation.ParallelTransition;
+import javafx.animation.RotateTransition;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 /** JavaFX application for playing Tic-Tac-Toe against the CPU. */
 public class TicTacToeApp extends Application {
@@ -18,10 +32,14 @@ public class TicTacToeApp extends Application {
     private final HumanPlayer human = new HumanPlayer('X', new Scanner(""));
     private final CpuPlayer cpu = new CpuPlayer('O');
     private final Button[][] cells = new Button[3][3];
+    private final Random random = new Random();
+    private final List<ParallelTransition> confettiAnimations = new ArrayList<>();
 
     private Player currentPlayer = human;
     private Label status;
     private boolean gameOver;
+    private Pane confettiLayer;
+    private Timeline confettiSpawner;
 
     @Override
     public void start(Stage stage) {
@@ -66,7 +84,12 @@ public class TicTacToeApp extends Application {
         content.setAlignment(Pos.CENTER);
         content.setPadding(new Insets(30));
 
-        Scene scene = new Scene(content);
+        confettiLayer = new Pane();
+        confettiLayer.setMouseTransparent(true);
+        StackPane root = new StackPane(content, confettiLayer);
+        Scene scene = new Scene(root);
+        confettiLayer.prefWidthProperty().bind(scene.widthProperty());
+        confettiLayer.prefHeightProperty().bind(scene.heightProperty());
         scene.getStylesheets().add(getClass().getResource("/app.css").toExternalForm());
         stage.setTitle("Tic-Tac-Toe");
         stage.setScene(scene);
@@ -96,8 +119,9 @@ public class TicTacToeApp extends Application {
     private boolean finishIfGameOver() {
         if (board.checkWin()) {
             gameOver = true;
-            status.setText(playerName(currentPlayer) + " (" + currentPlayer.getMarker() + ") wins!");
+            status.setText(playerName(currentPlayer) + " wins! ٩(^ᗜ^ )و");
             updateBoard();
+            startConfetti();
             return true;
         }
         if (board.isFull()) {
@@ -110,6 +134,7 @@ public class TicTacToeApp extends Application {
     }
 
     private void resetGame() {
+        stopConfetti();
         board.initialize();
         currentPlayer = human;
         gameOver = false;
@@ -139,6 +164,58 @@ public class TicTacToeApp extends Application {
                     cell.getStyleClass().add("o-cell");
                 }
             }
+        }
+    }
+
+    private void startConfetti() {
+        confettiSpawner = new Timeline(new javafx.animation.KeyFrame(
+                Duration.millis(90), event -> addConfetti()));
+        confettiSpawner.setCycleCount(Animation.INDEFINITE);
+        confettiSpawner.play();
+    }
+
+    private void addConfetti() {
+        Color[] colors = {
+            Color.DODGERBLUE, Color.MEDIUMPURPLE, Color.HOTPINK, Color.ORANGE
+        };
+        double size = 7 + random.nextDouble() * 8;
+        double width = Math.max(confettiLayer.getWidth(), 460);
+        double height = Math.max(confettiLayer.getHeight(), 650);
+        Rectangle particle = new Rectangle(size, size, colors[random.nextInt(colors.length)]);
+        particle.setArcWidth(2);
+        particle.setArcHeight(2);
+        particle.setLayoutX(random.nextDouble() * Math.max(0, width - size));
+        particle.setLayoutY(-size);
+        confettiLayer.getChildren().add(particle);
+
+        TranslateTransition fall = new TranslateTransition(
+                Duration.seconds(2.5 + random.nextDouble() * 2.5), particle);
+        fall.setByY(height + size * 2);
+        fall.setByX(random.nextDouble() * 120 - 60);
+        RotateTransition spin = new RotateTransition(
+                Duration.seconds(1.2 + random.nextDouble() * 1.8), particle);
+        spin.setByAngle(360 + random.nextInt(360));
+
+        ParallelTransition animation = new ParallelTransition(fall, spin);
+        confettiAnimations.add(animation);
+        animation.setOnFinished(event -> {
+            confettiLayer.getChildren().remove(particle);
+            confettiAnimations.remove(animation);
+        });
+        animation.play();
+    }
+
+    private void stopConfetti() {
+        if (confettiSpawner != null) {
+            confettiSpawner.stop();
+            confettiSpawner = null;
+        }
+        for (ParallelTransition animation : confettiAnimations) {
+            animation.stop();
+        }
+        confettiAnimations.clear();
+        if (confettiLayer != null) {
+            confettiLayer.getChildren().clear();
         }
     }
 
