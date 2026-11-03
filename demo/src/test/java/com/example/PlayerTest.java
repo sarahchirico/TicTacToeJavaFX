@@ -7,18 +7,34 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.Scanner;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /** Unit tests for human and CPU player move behavior. */
+@TestMethodOrder(OrderAnnotation.class)
 class PlayerTest {
-    /** Verifies player names have the appropriate defaults and can be changed. */
+    /** Verifies the first two players of each type receive sequential default names. */
     @Test
-    void playerNamesHaveDefaultsAndCanBeUpdated() {
+    @Order(1)
+    void assignsSequentialDefaultNamesToHumanAndCpuPlayers() {
+        HumanPlayer firstHuman = new HumanPlayer('X', new Scanner(""));
+        HumanPlayer secondHuman = new HumanPlayer('O', new Scanner(""));
+        CpuPlayer firstCpu = new CpuPlayer('X', new Random(7));
+        CpuPlayer secondCpu = new CpuPlayer('O', new Random(8));
+
+        assertEquals("Player #1", firstHuman.getName());
+        assertEquals("Player #2", secondHuman.getName());
+        assertEquals("CPU #1", firstCpu.getName());
+        assertEquals("CPU #2", secondCpu.getName());
+    }
+
+    /** Verifies both player types can have their names changed. */
+    @Test
+    void playerNamesCanBeUpdated() {
         HumanPlayer human = new HumanPlayer('X', new Scanner(""));
         CpuPlayer cpu = new CpuPlayer('O', new Random(7));
-
-        assertEquals("Player #1", human.getName());
-        assertEquals("CPU #1", cpu.getName());
 
         human.setName("Alice");
         cpu.setName("Computer");
